@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emissão de Nota Fiscal de Serviço</title>
+    <style>
+        * {
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex; justify-content: center;">
+
+        <div style="max-width: 1000px; width: 100%;">
+
+            <h1 style="background-color: #e6e6e6; font-size: 20px; padding: 10px; margin-bottom: 30px;">Emissão de Nota
+                Fiscal de Serviço</h1>
+
+            <form style="margin-bottom: 20px;">
+                <label for="valor-venda">Valor (R$):</label>
+                <input type="number" id="valor-venda" placeholder="Digite o valor da venda" step="0.01" required>
+
+                <label for="itens-venda">Itens</label>
+                <input id="itens-venda" rows="4" placeholder="Descreva os itens vendidos" required></input>
+                <p style="margin-top: 20px;margin-bottom: 20px; font-size: 20px;">Impostos:</p>
+                <label for="imposto-irpf">Porcentagem do IRPF (%):</label>
+                <input type="number" id="imposto-irpf" placeholder="Digite a porcentagem de IRPF" step="0.01" required>
+
+                <label for="imposto-pis">Porcentagem do PIS (%):</label>
+                <input type="number" id="imposto-pis" placeholder="Digite a porcentagem de PIS" step="0.01" required>
+
+                <label for="imposto-cofins">Porcentagem do COFINS (%):</label>
+                <input type="number" id="imposto-cofins" placeholder="Digite a porcentagem de COFINS" step="0.01"
+                    required>
+
+                <label for="imposto-inss">Porcentagem do INSS (%):</label>
+                <input type="number" id="imposto-inss" placeholder="Digite a porcentagem de INSS" step="0.01" required>
+
+                <label for="imposto-issqn">Porcentagem do ISSQN (%):</label>
+                <input type="number" id="imposto-issqn" placeholder="Digite a porcentagem de ISSQN" step="0.01"
+                    required>
+
+
+            </form>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+
+                <button
+                    style="background-color: rgb(0, 191, 255); cursor: pointer; padding: 10px; color:white; border: none;"
+                    type="button" onclick="gerarNotaFiscal()">Gerar Nota Fiscal</button>
+                <button
+                    style="background-color: rgb(255, 166, 0); cursor: pointer; padding: 10px; color:white; border: none;"
+                    type="button" onclick="Limpar_Formulario()">Limpar Formulário</button>
+                <button
+                    style="background-color: rgb(255, 0, 0); cursor: pointer; padding: 10px; color:white; border: none;"
+                    type="button" onclick="Excluir_Nota_Fiscal()">Excluir Nota fiscal</button>
+            </div>
+            <div id="nota-fiscal">
+
+
+
+            </div>
+
+            <script>
+
+                function validarFormulario() {/*Função pra validar o forms e verificar se há algum campo em vazio*/
+                    const inputs = document.querySelectorAll('input[required]');
+                    let camposInvalidos = [];
+
+                    inputs.forEach(input => {
+                        if (!input.value.trim()) {
+                            camposInvalidos.push(input.id); // Adiciona o ID dos campos vazios
+                        }
+                    });
+
+                    if (camposInvalidos.length > 0) {
+                        alert("Por favor, preencha todos os campos obrigatórios.");
+                        return false; // Impede a continuação da ação
+                    }
+
+                    return true; // Permite a continuação
+                }
+                function calcularImpostos(valor, porcentagens) {  /*calcular o valor do imposto*/
+                    return porcentagens.map(p => (valor * p / 100).toFixed(2));
+                }
+                function Excluir_Nota_Fiscal() { /*Excluir nota fiscal*/
+                    if (document.getElementById('nota-fiscal').innerHTML == "") {
+                        alert("Não há Nota fiscal gerada para serem excluida!")
+                        return
+                    }
+
+                    document.getElementById('nota-fiscal').innerHTML = "";
+
+                }
+                function Limpar_Formulario() {
+                    document.getElementById('imposto-irpf').value = ""
+                    document.getElementById('imposto-cofins').value = ""
+                    document.getElementById('imposto-pis').value = ""
+                    document.getElementById('imposto-inss').value = ""
+                    document.getElementById('imposto-issqn').value = ""
+                    document.getElementById('valor-venda').value = ""
+                    document.getElementById('itens-venda').value = ""
+
+                }
+
+                function gerarNotaFiscal() {
+                    if (!validarFormulario()) {
+                        return
+                    }
+                    const valorVenda = parseFloat(document.getElementById('valor-venda').value);
+                    const itensVenda = document.getElementById('itens-venda').value;
+
+                    const impostos = [
+                        parseFloat(document.getElementById('imposto-irpf').value),
+                        parseFloat(document.getElementById('imposto-pis').value),
+                        parseFloat(document.getElementById('imposto-cofins').value),
+                        parseFloat(document.getElementById('imposto-inss').value),
+                        parseFloat(document.getElementById('imposto-issqn').value)
+                    ];
+
+                    const [irpf, pis, cofins, inss, issqn] = calcularImpostos(valorVenda, impostos);
+                    const totalImpostos = [irpf, pis, cofins, inss, issqn].reduce((sum, val) => sum + parseFloat(val), 0).toFixed(2);
+
+                    const notaHtml = `
+            <div style=" margin-top: 20px;padding: 20px;border: 1px solid #ccc;background-color: #e6e6e6;"
+                    >
+
+                    <h2 style="margin-bottom: 20px; font-size: 20px;">Nota Fiscal</h2>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <label>Valor da Venda:</label>
+                            <p style="border:1px solid black;  padding:10px;">R$ ${valorVenda.toFixed(2)}</p>
+                            </div>
+                            <div>
+                                <label>Itens Vendidos:</label>
+                                <p style="border:1px solid black;  padding:10px;">${itensVenda}</p>
+                    </div>
+                    <div>
+                        
+                        <label>Impostos Calculados:</label>
+                        <div style="display: flex;">
+                            <p
+                            style=" display: flex;align-items: center; width: 100%; padding: 10px; border:1px solid black;  ">
+                            IRPF: R$ ${irpf}</p>
+                            <p
+                            style="display: flex;align-items: center; width: 100%; padding: 10px; border:1px solid black;">
+                            PIS: R$ ${pis}</p>
+                            <p
+                            style="display: flex;align-items: center; width: 100%; padding: 10px; border:1px solid black;">
+                            COFINS: R$ ${cofins}</p>
+                            <p
+                            style="display: flex;align-items: center; width: 100%; padding: 10px; border:1px solid black;">
+                            INSS: R$ ${inss}</p>
+                            <p
+                            style="display: flex;align-items: center; width: 100%; padding: 10px; border:1px solid black;">
+                            ISSQN: R$ ${issqn}</p>
+                            </div>
+                            
+                            
+                            
+                            </div>
+                            <div>
+                                <label>Total Impostos:</label>
+                                <p style="border:1px solid black;  padding: 10px;">
+                                    
+                                    R$ ${totalImpostos}
+                                    </p>
+                                    
+                                    </div>
+                                    <div>
+                                        <label>Total Líquido:</label>
+                                        <p style="border:1px solid black;  padding: 10px;">
+                                            
+                                            R$ ${(valorVenda - totalImpostos).toFixed(2)}
+                                            </p>
+                                            
+                                            </div>
+                </div>          
+                                            `;
+
+                    document.getElementById('nota-fiscal').innerHTML = notaHtml;
+                }
+            </script>
+        </div>
+    </div>
+</body>
+
+</html>
